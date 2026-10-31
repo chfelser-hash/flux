@@ -54,7 +54,11 @@ Gleich wie Reisli und Bracket – **Container Manager** (DSM 7.2). Flux nutzt Po
    ```sh
    sudo git clone https://github.com/chfelser-hash/flux.git /volume1/docker/flux
    ```
-2. Container Manager → **Projekt** → **Erstellen**
+2. Image bauen und starten – direkt per SSH:
+   ```sh
+   cd /volume1/docker/flux && sudo docker compose up -d --build
+   ```
+   Oder im Container Manager → **Projekt** → **Erstellen**
    - Projektname: `flux`
    - Pfad: `/docker/flux`
    - Quelle: «Vorhandene docker-compose.yml verwenden»
