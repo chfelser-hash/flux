@@ -37,6 +37,12 @@ jobs:
             echo '```'
             grep -E '^# (pass|fail) ' test-output.txt | sed 's/^# /- /'
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Fehler als Hinweis anzeigen
+        if: failure()
+        run: |
+          msg=$(grep -E -B2 -A14 '^\s*not ok|ERR_|Error:' test-output.txt | head -80 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          [ -n "$msg" ] || msg=$(tail -40 test-output.txt | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Fehlgeschlagene Tests::$msg"
       - name: Bildschirmfotos bei Fehlern
         if: failure()
         uses: actions/upload-artifact@v4
