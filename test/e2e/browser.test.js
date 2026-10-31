@@ -81,10 +81,11 @@ test('Übersicht: Stand, Verlauf, Kompensation; Saldo neu eintragen', { timeout:
   await page.waitForSelector('svg.chart');
   assert.match(await page.textContent('.readout.gleit .r-value'), /\+12:30/);
   assert.match(await page.textContent('.comp tfoot'), /5 Tage/);
-  await page.locator('svg.chart').scrollIntoViewIfNeeded();
-  const box = await page.locator('svg.chart .hit').boundingBox();
-  await page.mouse.move(box.x + box.width * 0.4, box.y + box.height / 2);
-  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height / 2);
+  // Antippen in der Mitte des Verlaufs (direkt als Ereignis – unabhängig davon, was gerade im Bild ist)
+  await page.$eval('svg.chart .hit', (el) => {
+    const r = el.getBoundingClientRect();
+    el.dispatchEvent(new PointerEvent('pointerdown', { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, bubbles: true }));
+  });
   await page.waitForFunction(() => /Ferien/.test(document.querySelector('.pick').textContent));
   await page.click('button:has-text("Saldo eintragen")');
   await page.fill('dialog[open] input[name=gleit]', 'abc');
