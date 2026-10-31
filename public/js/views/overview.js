@@ -3,7 +3,7 @@ import { h } from '../ui.js';
 import { hm, fmtDays } from '../flux.js';
 import { gleitChart } from '../chart.js';
 import { state, remove } from '../app.js';
-import { MONTHS_SHORT, fmtDate, saldo, days, saldoDialog, empty } from './shared.js';
+import { MONTHS_SHORT, fmtDate, saldo, days, saldoDays, saldoBoth, saldoDialog, empty } from './shared.js';
 
 export function renderOverview(main, c) {
   const s = c.summary;
@@ -21,8 +21,8 @@ export function renderOverview(main, c) {
     h('div', { class: 'readout gleit' },
       h('span', { class: 'r-label' }, `Gleitzeit ${nowLabel}`),
       h('strong', { class: 'r-value' }, saldo(gNow)),
-      h('span', { class: 'r-sub' }, `≈ ${days(gNow / full).replace('-', '−')}`),
-      past ? null : h('span', { class: 'r-end' }, 'Ende Jahr ', h('strong', null, saldo(s.gleitEnd), ' h'), h('span', { class: 'r-end-days' }, `≈ ${days(s.gleitEnd / full).replace('-', '−')}`))),
+      h('span', { class: 'r-sub' }, `≈ ${saldoDays(gNow, full)}`),
+      past ? null : h('span', { class: 'r-end' }, 'Ende Jahr ', h('strong', null, saldo(s.gleitEnd), ' h'), h('span', { class: 'r-end-days' }, `≈ ${saldoDays(s.gleitEnd, full)}`))),
     h('div', { class: 'readout ferien' },
       h('span', { class: 'r-label' }, `Ferien übrig ${nowLabel}`),
       h('strong', { class: 'r-value' }, fmtDays(fNow), h('small', null, Math.abs(fNow) === 1 ? ' Tag' : ' Tage')),
@@ -37,7 +37,7 @@ export function renderOverview(main, c) {
       pickOut.replaceChildren(h('span', { class: 'muted' }, 'Antippen oder darüberfahren für den Stand an einem Tag. Gestrichelt = Prognose.'));
       return;
     }
-    const bits = [h('strong', null, fmtDate(d.date)), ' ', saldo(d.gleit), h('span', { class: 'muted' }, `, Ferien ${fmtDays(d.ferien)}`)];
+    const bits = [h('strong', null, fmtDate(d.date)), ' ', saldoBoth(d.gleit, full), h('span', { class: 'muted' }, `, Ferien ${fmtDays(d.ferien)}`)];
     if (d.holidays.length && d.base) bits.push(h('span', { class: 'tag' }, d.holidays.join(', ')));
     if (d.eve.length && d.soll) bits.push(h('span', { class: 'tag' }, `Vortag ${d.eve.join(', ')}: Soll ${hm(d.soll)}`));
     if (d.absences.length) {
@@ -52,8 +52,8 @@ export function renderOverview(main, c) {
   chartBox.append(gleitChart(yearDays, { width, today: c.today, anchors: new Set(state.data.saldos.map((x) => x.date)), onPick: showPick }));
 
   const warn = !past && s.low && s.low.gleit < -0.5
-    ? h('p', { class: 'note neg' }, `Achtung: Am ${fmtDate(s.low.date)} wäre die Gleitzeit bei `, saldo(s.low.gleit), ' – im Minus.')
-    : (!past && s.low ? h('p', { class: 'note' }, 'Tiefster Stand ab heute: ', saldo(s.low.gleit), ` am ${fmtDate(s.low.date)}`) : null);
+    ? h('p', { class: 'note neg' }, `Achtung: Am ${fmtDate(s.low.date)} wäre die Gleitzeit bei `, saldoBoth(s.low.gleit, full), ' – im Minus.')
+    : (!past && s.low ? h('p', { class: 'note' }, 'Tiefster Stand ab heute: ', saldoBoth(s.low.gleit, full), ` am ${fmtDate(s.low.date)}`) : null);
 
   // ---------- Kompensation ----------
   const fTot = s.ferienTaken + s.ferienPlanned, gTot = s.gleitTaken + s.gleitPlanned;
@@ -81,7 +81,7 @@ export function renderOverview(main, c) {
         h('td', null, fmtDays(m.units)),
         h('td', { class: m.ferien ? 'sand' : 'muted' }, m.ferien ? fmtDays(m.ferien) : '–'),
         h('td', { class: m.gleit ? 'lake' : 'muted' }, m.gleit ? fmtDays(m.gleit) : '–'),
-        h('td', null, saldo(m.gleitEnd)),
+        h('td', null, saldo(m.gleitEnd), h('span', { class: 'cell-days' }, saldoDays(m.gleitEnd, full))),
         h('td', { class: m.ferienEnd < 0 ? 'neg' : '' }, fmtDays(m.ferienEnd))))))));
 
   // ---------- Feiertage ----------
@@ -97,7 +97,7 @@ export function renderOverview(main, c) {
     h('h2', null, 'Eingetragene Stände'),
     list.length ? h('ul', { class: 'anchors' }, list.map((x) => h('li', null,
       h('span', { class: 'a-date' }, fmtDate(x.date)),
-      saldo(x.gleitMin),
+      saldoBoth(x.gleitMin, full),
       x.ferien !== null && x.ferien !== undefined ? h('span', { class: 'muted small' }, `Ferien ${fmtDays(x.ferien)}`) : null,
       h('span', { class: 'muted small grow' }, x.note || ''),
       h('button', { class: 'icon-btn', 'aria-label': 'Bearbeiten', onclick: () => saldoDialog(x) }, '✎'),

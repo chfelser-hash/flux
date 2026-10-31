@@ -23,6 +23,12 @@ export function fmtRange(a, b) {
 /** Gleitzeit mit Vorzeichen und Farbe */
 export const saldo = (min, cls = '') => h('span', { class: `saldo ${min < -0.5 ? 'neg' : min > 0.5 ? 'pos' : ''} ${cls}` }, hm(min, true));
 
+/** Gleitzeit in Tagen («−1.74 Tage»), umgerechnet mit der Sollzeit pro Tag */
+export const saldoDays = (min, full) => (min / full >= 0.005 ? '+' : '') + days(min / full).replace('-', '−');
+
+/** Gleitzeit in Stunden und dahinter in Tagen: «+12:30 h (1.49 Tage)» */
+export const saldoBoth = (min, full) => h('span', { class: 'saldo-both' }, saldo(min), ' h ', h('span', { class: 'muted' }, `(${saldoDays(min, full)})`));
+
 /** «12.5 Tage» / «1 Tag» */
 export const days = (x) => `${fmtDays(x)} ${Math.abs(x) === 1 ? 'Tag' : 'Tage'}`;
 

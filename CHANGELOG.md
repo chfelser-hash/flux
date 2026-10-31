@@ -3,6 +3,9 @@
 Neueste Version zuoberst. Format: `## Version – Datum`, darunter je eine Zeile pro Änderung.
 Die Version steht auch in `package.json` und unter «Einstellungen → Über Flux».
 
+## 1.0.3 – 2026-10-31
+- Übersicht: Der Gleitzeit-Saldo steht überall auch in Tagen – im Verlauf, beim tiefsten Stand, in den Monaten und bei den eingetragenen Ständen.
+
 ## 1.0.2 – 2026-10-31
 - Übersicht: Gleitzeit-Saldo Ende Jahr in Stunden und Tagen.
 
