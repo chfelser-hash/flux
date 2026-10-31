@@ -3,6 +3,9 @@
 Neueste Version zuoberst. Format: `## Version – Datum`, darunter je eine Zeile pro Änderung.
 Die Version steht auch in `package.json` und unter «Einstellungen → Über Flux».
 
+## 1.0.2 – 2026-10-31
+- Übersicht: Gleitzeit-Saldo Ende Jahr in Stunden und Tagen.
+
 ## 1.0.1 – 2026-10-31
 - Abwesenheit erfassen: Nach dem Wählen von «Von» öffnet sich «Bis» gleich mit diesem Datum – Von und Bis in einem Zug.
 
