@@ -5,7 +5,7 @@ const ASSETS = [
   '/', '/index.html', '/styles.css', '/manifest.webmanifest',
   '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png',
   '/js/app.js', '/js/ui.js', '/js/flux.js', '/js/chart.js',
-  '/js/views/overview.js', '/js/views/absences.js', '/js/views/stamp.js', '/js/views/settings.js', '/js/views/shared.js',
+  '/js/views/overview.js', '/js/views/absences.js', '/js/views/stamp.js', '/js/views/settings.js', '/js/views/shared.js', '/js/views/rangecal.js',
 ];
 
 self.addEventListener('install', (e) => {

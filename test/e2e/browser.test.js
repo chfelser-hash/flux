@@ -56,11 +56,13 @@ test('Feiertag anhaken und Vorfeiertag setzen', { timeout: 60000 }, async () => 
 test('Abwesenheit erfassen: Arbeitstage zählen, auf Ferien und Gleitzeit aufteilen', { timeout: 60000 }, async () => {
   await page.click('.tab:has-text("Abwesend")');
   await page.click('button:has-text("+ Abwesenheit")');
-  await page.fill('dialog[open] input[name=from]', isoOf(mon, 0));
-  // «Bis» übernimmt das Von-Datum und bekommt den Fokus
-  await page.waitForFunction((d) => document.querySelector('dialog[open] input[name=to]').value === d && document.activeElement?.name === 'to', isoOf(mon, 0));
-  await page.fill('dialog[open] input[name=to]', isoOf(mon, 4));
-  await page.dispatchEvent('dialog[open] input[name=to]', 'change');
+  // Von–Bis im Kalender: zum Dezember blättern, ersten und letzten Tag antippen – ohne OK
+  const target = isoOf(mon, 0).slice(0, 7);
+  for (let i = 0; i < 24 && (await page.getAttribute('dialog[open] .rcal', 'data-month')) !== target; i++) await page.click('dialog[open] .rcal-next');
+  await page.click(`dialog[open] .rcal-day[data-date="${isoOf(mon, 0)}"]`);
+  assert.equal(await page.getAttribute('dialog[open] .rcal', 'data-picking'), 'to');
+  await page.click(`dialog[open] .rcal-day[data-date="${isoOf(mon, 4)}"]`);
+  assert.equal(await page.$$eval('dialog[open] .rcal-day.in', (x) => x.length), 5);
   await page.waitForSelector('dialog[open] .preview >> text=5 Arbeitstage');
   await page.fill('dialog[open] input[name=gleit]', '1.5');
   assert.equal(await page.inputValue('dialog[open] input[name=ferien]'), '3.5');

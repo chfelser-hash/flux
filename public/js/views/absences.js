@@ -3,6 +3,7 @@ import { h, modal } from '../ui.js';
 import { fmtDays, absencePreview, hm, yearOf } from '../flux.js';
 import { state, act, remove } from '../app.js';
 import { fmtRange, field, empty, days } from './shared.js';
+import { rangeCalendar } from './rangecal.js';
 
 export function renderAbsences(main, c) {
   const y = state.year;
@@ -33,8 +34,7 @@ export function renderAbsences(main, c) {
 export async function absenceDialog(c, a = null) {
   const y = state.year;
   const defFrom = a?.from || (Number(c.today.slice(0, 4)) === y ? c.today : `${y}-01-01`);
-  const from = h('input', { type: 'date', name: 'from', value: defFrom, required: true });
-  const to = h('input', { type: 'date', name: 'to', value: a?.to || defFrom, required: true });
+  const range = { from: defFrom, to: a?.to || defFrom };
   const label = h('input', { name: 'label', maxlength: 60, value: a?.label || '', placeholder: 'z.B. Sommerferien' });
   const ferien = h('input', { name: 'ferien', inputmode: 'decimal', value: a ? a.ferien : '' });
   const gleit = h('input', { name: 'gleit', inputmode: 'decimal', value: a ? a.gleit : '0' });
@@ -44,8 +44,7 @@ export async function absenceDialog(c, a = null) {
   let units = 0;
   let touchedFerien = !!a;
   const update = (autofill) => {
-    if (to.value < from.value && from.value) to.value = from.value;
-    const p = absencePreview(c.tl.cal, from.value, to.value);
+    const p = absencePreview(c.tl.cal, range.from, range.to);
     units = p ? p.units : 0;
     if (autofill === 'gleit' || (autofill && !touchedFerien)) {
       const g = n(gleit) || 0;
@@ -59,31 +58,20 @@ export async function absenceDialog(c, a = null) {
       h('p', { class: rest < -0.001 ? 'neg' : 'muted' }, rest < -0.001 ? `${fmtDays(-rest)} Tage zu viel` : rest > 0.001 ? `${fmtDays(rest)} Tage arbeitest du` : `Ferien ${fmtDays(f)} + Gleitzeit ${fmtDays(g)} = alle Arbeitstage`),
       g ? h('p', { class: 'muted small' }, `Gleitzeit-Saldo sinkt um ${hm(g * c.tl.settings.sollMin)} h`) : null));
   };
-  // Nach «Von» gleich «Bis» öffnen – mit dem gewählten Von-Datum als Start, damit Von–Bis in einem Zug geht
-  let toTouched = !!a;
-  from.addEventListener('change', () => {
-    if (!from.value) return;
-    if (!toTouched || to.value < from.value) to.value = from.value;
-    update(true);
-    setTimeout(() => {
-      to.focus();
-      try { to.showPicker?.(); } catch { /* Browser erlaubt es nicht – dann bleibt das Feld fokussiert */ }
-    }, 50);
-  });
-  to.addEventListener('change', () => { toTouched = true; update(true); });
+  const picker = rangeCalendar({ range, cal: c.tl.cal, today: c.today, onChange: () => update(true) });
   gleit.addEventListener('input', () => update('gleit'));
   ferien.addEventListener('input', () => { touchedFerien = true; update(false); });
   const quick = (fv, gv) => { ferien.value = String(fv); gleit.value = String(gv); touchedFerien = true; update(false); };
   update(!a);
-  const r = await modal(a ? 'Abwesenheit bearbeiten' : 'Abwesenheit erfassen', h('div', null,
-    h('div', { class: 'form-grid two' }, field('Von', from), field('Bis', to)),
+  const r = await modal(a ? 'Abwesenheit bearbeiten' : 'Abwesenheit erfassen', h('div', { dataset: { noautofocus: '1' } },
+    picker,
     field('Bezeichnung', label),
     info,
     h('div', { class: 'form-grid two' }, field('Ferientage', ferien), field('Gleitzeittage', gleit)),
     h('div', { class: 'row gap wrap quick' },
       h('button', { type: 'button', class: 'btn small', onclick: () => quick(units, 0) }, 'Alles Ferien'),
       h('button', { type: 'button', class: 'btn small', onclick: () => quick(0, units) }, 'Alles Gleitzeit'),
-      h('button', { type: 'button', class: 'btn small', onclick: () => { to.value = from.value; update(false); quick(0.5, 0); } }, 'Halber Ferientag')),
+      h('button', { type: 'button', class: 'btn small', onclick: () => { range.to = range.from; picker.redraw(); update(false); quick(0.5, 0); } }, 'Halber Ferientag')),
     err), [
     a ? { label: 'Löschen', danger: true, value: 'delete' } : null,
     { label: 'Abbrechen', value: null },
@@ -91,7 +79,7 @@ export async function absenceDialog(c, a = null) {
       label: a ? 'Speichern' : 'Erfassen', primary: true, onClick: async () => {
         const f = n(ferien) ?? 0, g = n(gleit) ?? 0;
         if (f < 0 || g < 0) { err.textContent = 'Keine negativen Tage'; err.hidden = false; return false; }
-        const body = { from: from.value, to: to.value, label: label.value, ferien: f, gleit: g };
+        const body = { from: range.from, to: range.to, label: label.value, ferien: f, gleit: g };
         const res = await act(a ? 'PUT' : 'POST', a ? `/api/absences/${a.id}` : '/api/absences', body, { done: a ? 'Gespeichert' : `Erfasst: ${days(f + g)}` });
         return res ? true : false;
       },

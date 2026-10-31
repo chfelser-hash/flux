@@ -330,3 +330,26 @@ dialog.modal::backdrop { background: rgba(4, 18, 20, .55); }
 .r-end-days { display: block; font-size: .82rem; color: var(--ink-3); }
 .cell-days { display: block; font-size: .76rem; color: var(--ink-3); white-space: nowrap; }
 .saldo-both { white-space: nowrap; }
+
+/* ---------- Von–Bis-Kalender ---------- */
+.rcal { margin: 0 0 .9rem; }
+.rcal-sel { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.rcal-chip { display: flex; flex-direction: column; align-items: flex-start; gap: .05rem; padding: .45rem .75rem; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; text-align: left; }
+.rcal-chip span { font-size: .78rem; font-weight: 600; color: var(--ink-3); }
+.rcal-chip strong { font: 700 1.05rem var(--display); }
+.rcal-chip.on { border-color: var(--lake); box-shadow: inset 0 0 0 1px var(--lake); background: var(--surface); }
+.rcal-hint { margin: .45rem 0 .2rem; font-size: .85rem; color: var(--ink-3); }
+.rcal-nav { display: flex; align-items: center; justify-content: space-between; }
+.rcal-nav strong { font: 700 1.05rem var(--display); }
+.rcal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px 0; }
+.rcal-wd { text-align: center; font-size: .75rem; font-weight: 600; color: var(--ink-3); padding: .2rem 0; }
+.rcal-day { position: relative; height: 42px; min-width: 0; padding: 0; border: 0; background: none; cursor: pointer; font-weight: 600; font-size: .98rem; color: var(--ink); }
+.rcal-day.rcal-off { color: var(--ink-3); font-weight: 400; }
+.rcal-day.rcal-hol::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--sand); }
+.rcal-day.today { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.rcal-day.in { background: var(--lake-soft); }
+.rcal-day.start { border-radius: 999px 0 0 999px; }
+.rcal-day.end { border-radius: 0 999px 999px 0; }
+.rcal-day.start.end { border-radius: 999px; }
+.rcal-day.start, .rcal-day.end { background: var(--lake); color: var(--lake-ink); }
+.rcal-day:focus-visible { outline-offset: -2px; }

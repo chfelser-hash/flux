@@ -83,7 +83,8 @@ export function modal(title, content, buttons = [{ label: 'Schliessen' }]) {
     dlg.addEventListener('cancel', (e) => { e.preventDefault(); close(null); });
     document.body.append(dlg);
     dlg.showModal();
-    const first = dlg.querySelector('input,select,textarea');
+    // data-noautofocus: kein Feld fokussieren (sonst springt auf dem Handy die Tastatur über den Kalender)
+    const first = dlg.querySelector('[data-noautofocus]') ? null : dlg.querySelector('input,select,textarea');
     // Erstes Feld fokussieren – aber nicht, wenn schon in ein anderes Feld getippt wird
     if (first) setTimeout(() => { const a = document.activeElement; if (!a || a === dlg || a === document.body || !dlg.contains(a) || a.tagName === 'BUTTON') first.focus(); }, 30);
   });
