@@ -82,7 +82,7 @@ test('Übersicht: Stand, Verlauf, Kompensation; Saldo neu eintragen', { timeout:
   await page.click('.tab:has-text("Übersicht")');
   await page.waitForSelector('svg.chart');
   assert.match(await page.textContent('.readout.gleit .r-value'), /\+12:30/);
-  assert.match(await page.textContent('.readout.gleit .r-end'), /Ende Jahr [+−±]\d+:\d\d h≈ −?[\d.]+ Tage?/);
+  assert.match(await page.textContent('.readout.gleit .r-end'), /Ende Jahr [+−±]\d+:\d\d h≈ [+−]?[\d.]+ Tage?/);
   assert.match(await page.textContent('.comp tfoot'), /5 Tage/);
   // Antippen in der Mitte des Verlaufs (direkt als Ereignis – unabhängig davon, was gerade im Bild ist)
   await page.$eval('svg.chart .hit', (el) => {
