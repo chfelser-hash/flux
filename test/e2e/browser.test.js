@@ -57,6 +57,8 @@ test('Abwesenheit erfassen: Arbeitstage zählen, auf Ferien und Gleitzeit auftei
   await page.click('.tab:has-text("Abwesend")');
   await page.click('button:has-text("+ Abwesenheit")');
   await page.fill('dialog[open] input[name=from]', isoOf(mon, 0));
+  // «Bis» übernimmt das Von-Datum und bekommt den Fokus
+  await page.waitForFunction((d) => document.querySelector('dialog[open] input[name=to]').value === d && document.activeElement?.name === 'to', isoOf(mon, 0));
   await page.fill('dialog[open] input[name=to]', isoOf(mon, 4));
   await page.dispatchEvent('dialog[open] input[name=to]', 'change');
   await page.waitForSelector('dialog[open] .preview >> text=5 Arbeitstage');

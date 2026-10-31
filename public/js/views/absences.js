@@ -59,8 +59,18 @@ export async function absenceDialog(c, a = null) {
       h('p', { class: rest < -0.001 ? 'neg' : 'muted' }, rest < -0.001 ? `${fmtDays(-rest)} Tage zu viel` : rest > 0.001 ? `${fmtDays(rest)} Tage arbeitest du` : `Ferien ${fmtDays(f)} + Gleitzeit ${fmtDays(g)} = alle Arbeitstage`),
       g ? h('p', { class: 'muted small' }, `Gleitzeit-Saldo sinkt um ${hm(g * c.tl.settings.sollMin)} h`) : null));
   };
-  from.addEventListener('change', () => update(true));
-  to.addEventListener('change', () => update(true));
+  // Nach «Von» gleich «Bis» öffnen – mit dem gewählten Von-Datum als Start, damit Von–Bis in einem Zug geht
+  let toTouched = !!a;
+  from.addEventListener('change', () => {
+    if (!from.value) return;
+    if (!toTouched || to.value < from.value) to.value = from.value;
+    update(true);
+    setTimeout(() => {
+      to.focus();
+      try { to.showPicker?.(); } catch { /* Browser erlaubt es nicht – dann bleibt das Feld fokussiert */ }
+    }, 50);
+  });
+  to.addEventListener('change', () => { toTouched = true; update(true); });
   gleit.addEventListener('input', () => update('gleit'));
   ferien.addEventListener('input', () => { touchedFerien = true; update(false); });
   const quick = (fv, gv) => { ferien.value = String(fv); gleit.value = String(gv); touchedFerien = true; update(false); };
