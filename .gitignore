@@ -1,0 +1,15 @@
+# Ferien- und Gleitzeitdaten – niemals ins Repo!
+data/*
+!data/.gitkeep
+flux-sicherung*.json
+*.xlsx
+*.xlsm
+*.csv
+
+# Allgemein
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+test-results/

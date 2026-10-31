@@ -1,0 +1,19 @@
+services:
+  flux:
+    build: .
+    image: flux:latest
+    container_name: flux
+    restart: unless-stopped
+    ports:
+      # 8084, damit Flux neben Kässeli (8080), Reisli (8081) und Bracket (8082) auf derselben NAS laufen kann
+      - "8084:8084"
+    volumes:
+      # Daten bleiben ausserhalb des Containers (auf der Synology z.B. /volume1/docker/flux/data)
+      - ./data:/data
+      # Programmcode direkt aus diesem Git-Ordner: «Einstellungen → Über Flux → Nach Updates suchen» holt neue Versionen
+      # ohne Neubau des Containers. Wer das nicht will: diese Zeile entfernen und UPDATE_ENABLED=false setzen.
+      - ./:/app
+    environment:
+      - TZ=Europe/Zurich
+      # Nach «Aktualisieren» neu starten (Docker startet den Container automatisch wieder)
+      - RESTART_ON_UPDATE=true
