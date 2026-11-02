@@ -325,3 +325,36 @@ test('Erstes Jahr ohne Startwerte: Verlauf wird vom ersten Stand zurückgerechne
   d.years[2026].startGleitMin = 0;
   assert.equal(timeline(d).byDate.get('2026-01-01').morning.gleit, 0);
 });
+
+test('Stempelrechner: Vorholzeit erreicht um …', async () => {
+  let r = stamp(['07:30', '12:00', '12:45', ''], 504, 16 * 60, 15);
+  assert.equal(clock(r.reachAt), '16:39');
+  assert.equal(clock(r.reachPlusAt), '16:54');
+  r = stamp(['07:30', '12:00', '12:45', '17:00'], 504, null, 15);
+  assert.equal(r.diff, 21);
+  assert.equal(r.diffPlus, 6);
+  r = stamp(['07:30', '12:00', '12:45', '16:45'], 504, null, 15);
+  assert.equal(r.diffPlus, -9);
+  // Schon über Soll + Vorholzeit gearbeitet: erreicht = Beginn des laufenden Blocks
+  r = stamp(['06:00', '15:00', '15:30'], 504, null, 15);
+  assert.equal(r.reachPlusAt, 15 * 60 + 30);
+});
+
+test('Ziffernblock: Doppelpunkt automatisch, ungültige Ziffern verworfen', async () => {
+  const { timeDigits } = await import('../public/js/flux.js');
+  assert.deepEqual(timeDigits('').allowed.length, 10);
+  assert.equal(timeDigits('0').text, '0');
+  assert.equal(timeDigits('07').text, '07:');
+  assert.equal(timeDigits('073').text, '07:3');
+  assert.equal(timeDigits('0730').text, '07:30');
+  assert.equal(timeDigits('0730').complete, true);
+  assert.equal(timeDigits('7').text, '07:', 'einstellige Stunde wird ergänzt');
+  assert.equal(timeDigits('730').text, '07:30');
+  assert.deepEqual(timeDigits('2').allowed, [0, 1, 2, 3]);
+  assert.equal(timeDigits('25').text, '2', '25 Uhr gibt es nicht');
+  assert.deepEqual(timeDigits('12').allowed, [0, 1, 2, 3, 4, 5]);
+  assert.equal(timeDigits('1290').text, '12:0', '9x Minuten gibt es nicht');
+  assert.equal(timeDigits('12:45').text, '12:45');
+  assert.deepEqual(timeDigits('1245').allowed, []);
+  assert.equal(timeDigits('123456').digits, '1234');
+});

@@ -353,3 +353,28 @@ dialog.modal::backdrop { background: rgba(4, 18, 20, .55); }
 .rcal-day.start.end { border-radius: 999px; }
 .rcal-day.start, .rcal-day.end { background: var(--lake); color: var(--lake-ink); }
 .rcal-day:focus-visible { outline-offset: -2px; }
+
+/* ---------- Stempel: Felder und Ziffernblock ---------- */
+.stamp-grid { gap: .55rem; }
+.stamp-pair { gap: .15rem .5rem; }
+.stamp-slot { display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 0; padding: .35rem .3rem .45rem; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; color: var(--ink); }
+.slot-label { font-size: .76rem; font-weight: 600; color: var(--ink-3); }
+.slot-time { font: 800 1.75rem/1.15 var(--display); letter-spacing: .01em; }
+.stamp-slot.empty .slot-time { color: var(--line); }
+.stamp-slot.on { border-color: var(--lake); box-shadow: inset 0 0 0 2px var(--lake); background: var(--surface); }
+.stamp-slot.on.empty .slot-time { color: var(--ink-3); }
+.stamp-slot.typing .slot-time { color: var(--lake); }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; max-width: 380px; margin: .9rem auto 0; }
+.key { min-height: 58px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font: 700 1.6rem var(--display); color: var(--ink); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.key:active:not(:disabled) { background: var(--lake-soft); border-color: var(--lake); }
+.key:disabled { opacity: .3; cursor: default; }
+.key-fn { font-size: 1.05rem; background: var(--surface-2); }
+.reach-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin: 0 0 .3rem; }
+.reach-row .reach { display: flex; flex-direction: column; align-items: center; margin: 0; font-size: .85rem; color: var(--ink-2); font-weight: 600; }
+.reach-row .reach strong { font: 800 1.9rem/1.1 var(--display); color: var(--lake); }
+.reach-row .reach.plus strong { color: var(--pos); }
+.reach-row:has(.reach:only-child) { grid-template-columns: 1fr; }
+.plus-check { margin: .1rem 0 .2rem; font-weight: 700; }
+.plus-check.pos { color: var(--pos); }
+.plus-check.neg { color: var(--neg); }
+.stamp-result { min-height: 6rem; margin-bottom: .7rem; }

@@ -3,6 +3,10 @@
 Neueste Version zuoberst. Format: `## Version – Datum`, darunter je eine Zeile pro Änderung.
 Die Version steht auch in `package.json` und unter «Einstellungen → Über Flux».
 
+## 1.2.0 – 2026-11-02
+- Stempelrechner: Zeiten über einen grossen Ziffernblock eintippen – der Doppelpunkt kommt von selbst (0 7 3 0 → 07:30, eine 7 allein wird zu 07:), danach springt es ins nächste Feld. Ungültige Ziffern sind gesperrt. Am PC geht auch die Tastatur.
+- Stempelrechner: zusätzlich «Vorholzeit erreicht um …» (Sollzeit plus eingestellter Aufbau pro Tag); nach dem Ausstempeln, ob die Vorholzeit erreicht ist oder wie viel fehlt.
+
 ## 1.1.0 – 2026-10-31
 - Abwesenheit erfassen: Von und Bis direkt in einem Kalender im Dialog antippen – erster Tag, letzter Tag, ohne «OK». Wochenenden und Feiertage sind blass bzw. markiert.
 

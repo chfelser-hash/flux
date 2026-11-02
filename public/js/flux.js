@@ -308,8 +308,9 @@ export function parseTime(t) {
 /**
  * times: Stempelzeiten der Reihe nach (Kommen, Gehen, Kommen, Gehen …), leere sind erlaubt.
  * Liefert gearbeitete Zeit, Differenz zur Sollzeit und – wenn gerade gearbeitet wird – wann die Sollzeit erreicht ist.
+ * plusMin: angestrebte Vorholzeit für heute (Sollzeit + plusMin = Ziel); liefert dazu reachPlusAt bzw. diffPlus.
  */
-export function stamp(times, sollMin, nowMin = null) {
+export function stamp(times, sollMin, nowMin = null, plusMin = 0) {
   const t = times.map(parseTime);
   let lastFilled = -1;
   t.forEach((x, i) => { if (x !== null) lastFilled = i; });
@@ -321,10 +322,11 @@ export function stamp(times, sollMin, nowMin = null) {
   for (let i = 0; i + 1 < list.length; i += 2) worked += list[i + 1] - list[i];
   for (let i = 1; i + 1 < list.length; i += 2) pause += list[i + 1] - list[i];
   const open = list.length % 2 === 1;
-  const out = { worked, pause, soll: sollMin, open };
+  const out = { worked, pause, soll: sollMin, open, plus: plusMin };
   if (open) {
     const start = list[list.length - 1];
     out.reachAt = start + Math.max(0, sollMin - worked);
+    out.reachPlusAt = start + Math.max(0, sollMin + plusMin - worked);
     out.noPauseYet = list.length === 1;
     if (nowMin !== null && nowMin > start) {
       out.running = nowMin - start;
@@ -332,8 +334,31 @@ export function stamp(times, sollMin, nowMin = null) {
     }
   } else {
     out.diff = worked - sollMin;
+    out.diffPlus = out.diff - plusMin;
   }
   return out;
+}
+
+/**
+ * Ziffernblock-Eingabe einer Uhrzeit: Ziffern ohne Doppelpunkt («0730», «730» geht nicht – die 7 wird zu «07»).
+ * Liefert {digits, text, complete, allowed} – allowed: welche Ziffern als Nächstes gültig sind.
+ */
+export function timeDigits(digits) {
+  let d = String(digits || '').replace(/\D/g, '').slice(0, 4);
+  // Erste Ziffer 3–9 kann nur eine einstellige Stunde sein → «07»
+  if (d.length >= 1 && Number(d[0]) >= 3) d = ('0' + d).slice(0, 4);
+  const allowed = (len, first) => {
+    if (len === 0) return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    if (len === 1) return first === '2' ? [0, 1, 2, 3] : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    if (len === 2) return [0, 1, 2, 3, 4, 5];
+    if (len === 3) return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    return [];
+  };
+  // Ungültige Ziffern verwerfen (z.B. «25»)
+  let ok = '';
+  for (const ch of d) if (allowed(ok.length, ok[0]).includes(Number(ch))) ok += ch;
+  const text = ok.length <= 2 ? ok + (ok.length === 2 ? ':' : '') : `${ok.slice(0, 2)}:${ok.slice(2)}`;
+  return { digits: ok, text, complete: ok.length === 4, allowed: allowed(ok.length, ok[0]) };
 }
 
 // ---------- Anzeige ----------

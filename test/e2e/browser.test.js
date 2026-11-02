@@ -103,28 +103,50 @@ test('Übersicht: Stand, Verlauf, Kompensation; Saldo neu eintragen', { timeout:
   assert.equal((await data()).saldos.length, 1, 'gleicher Tag ersetzt den Stand');
 });
 
-test('Stempelrechner: Differenz in Minuten, grün und rot', { timeout: 60000 }, async () => {
+test('Stempelrechner: Ziffernblock, Differenz grün/rot, Vorholzeit', { timeout: 60000 }, async () => {
   await page.click('.tab:has-text("Stempel")');
   await page.waitForSelector('.stamp');
   await page.fill('.soll-input', '8:24');
   await page.dispatchEvent('.soll-input', 'change');
-  await page.fill('input[name=t0]', '07:30');
-  await page.fill('input[name=t1]', '12:00');
-  await page.fill('input[name=t2]', '12:45');
-  assert.match(await page.textContent('.reach'), /16:39/);
-  await page.fill('input[name=t3]', '17:00');
+  const type = async (digits) => { for (const d of digits) await page.click(`.keypad .key[data-key="${d}"]`); };
+  const slot = (i) => page.textContent(`.stamp-slot[data-i="${i}"] .slot-time`);
+  // 7 → «07:» (einstellige Stunde), Doppelpunkt kommt von selbst, danach springt es ins nächste Feld
+  await type('7');
+  assert.equal(await slot(0), '07:');
+  await type('30');
+  assert.equal(await slot(0), '07:30');
+  assert.match(await page.getAttribute('.stamp-slot[data-i="1"]', 'class'), /\bon\b/);
+  // Ungültige Ziffer gesperrt: nach «2» geht keine 5
+  await type('1');
+  assert.equal(await page.isDisabled('.keypad .key[data-key="5"]'), false);
+  await page.click('.keypad .key-fn[aria-label="Löschen"]');
+  await type('2');
+  assert.equal(await page.isDisabled('.keypad .key[data-key="5"]'), true);
+  await page.click('.keypad .key-fn[aria-label="Löschen"]');
+  await type('1200');
+  await type('1245');
+  assert.match(await page.textContent('.reach-row'), /Sollzeit erreicht16:39/);
+  assert.match(await page.textContent('.reach-row'), /Vorholzeit \(\+15 Min\.\)16:54/);
+  await type('1700');
   assert.match(await page.textContent('.diff'), /\+21/);
   assert.ok(await page.$('.diff.pos'));
-  await page.fill('input[name=t3]', '16:30');
+  assert.match(await page.textContent('.plus-check'), /Vorholzeit \(\+15 Min\.\) erreicht – 6 Min\. darüber/);
+  // Letztes Feld korrigieren
+  await page.click('.stamp-slot[data-i="3"]');
+  await type('1630');
   assert.match(await page.textContent('.diff'), /−9/);
   assert.ok(await page.$('.diff.neg'));
+  assert.match(await page.textContent('.plus-check'), /fehlen 24 Min/);
   // Bleibt nach dem Neuladen erhalten
   await page.reload();
   await page.waitForSelector('.diff.neg');
+  // Tastatur am PC
   await page.click('button:has-text("Leeren")');
-  assert.equal(await page.inputValue('input[name=t0]'), '');
-  await page.click('button:has-text("Jetzt stempeln")');
-  assert.notEqual(await page.inputValue('input[name=t0]'), '');
+  assert.equal(await slot(0), '––:––');
+  await page.keyboard.type('0815');
+  assert.equal(await slot(0), '08:15');
+  await page.click('.keypad .key-fn[aria-label="Jetzt"]');
+  assert.match(await slot(1), /^\d\d:\d\d$/);
 });
 
 test('Einstellungen: nächstes Jahr anlegen und dorthin blättern', { timeout: 60000 }, async () => {
